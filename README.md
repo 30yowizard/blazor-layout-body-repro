@@ -50,4 +50,4 @@ The only other difference is that it skips the private layout attribute cache.
 To try it, replace `RouteView` with `BodyResettingRouteView` in `Components/Routes.razor`.
 
 This only covers `Body`, and it adds a type check per render that the real fix would probably cache.
-A more general fix is to reset parameters that a parent stops supplying, as proposed in #31272.
+A more general fix is to reset parameters that a parent stops supplying, as proposed in https://github.com/dotnet/aspnetcore/issues/31272.
