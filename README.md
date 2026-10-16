@@ -27,7 +27,27 @@ That fragment ends in `RouteView`'s page render delegate, which renders the curr
 
 Without `@layout MainLayout` on `Parent` the root type differs between the two routes, `Parent` is recreated, and the bug does not show.
 
-## Fix
+## Possible fix
 
-`Components/BodyResettingRouteView.cs` is `RouteView.Render` plus passing `Body = null` to a routed page that is a `LayoutComponentBase`.
+One way is to pass `Body = null` to a routed page that is a `LayoutComponentBase`, in `RouteView.RenderPageWithParameters`:
+
+```diff
+     foreach (var kvp in RouteData.RouteValues)
+     {
+         builder.AddComponentParameter(1, kvp.Key, kvp.Value);
+     }
+ 
++    if (typeof(LayoutComponentBase).IsAssignableFrom(RouteData.PageType))
++    {
++        builder.AddComponentParameter(2, nameof(LayoutComponentBase.Body), (RenderFragment)null);
++    }
++
+     builder.CloseComponent();
+```
+
+`Components/BodyResettingRouteView.cs` is a copy of `RouteView.Render` and `RenderPageWithParameters` with that change.
+The only other difference is that it skips the private layout attribute cache.
 To try it, replace `RouteView` with `BodyResettingRouteView` in `Components/Routes.razor`.
+
+This only covers `Body`, and it adds a type check per render that the real fix would probably cache.
+A more general fix is to reset parameters that a parent stops supplying, as proposed in #31272.

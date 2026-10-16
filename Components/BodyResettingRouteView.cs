@@ -8,21 +8,22 @@ public sealed class BodyResettingRouteView : RouteView
 {
     protected override void Render(RenderTreeBuilder builder)
     {
-        var layout = RouteData.PageType.GetCustomAttribute<LayoutAttribute>()?.LayoutType ?? DefaultLayout;
+        var pageLayoutType = RouteData.PageType.GetCustomAttribute<LayoutAttribute>()?.LayoutType
+            ?? DefaultLayout;
 
         builder.OpenComponent<LayoutView>(0);
-        builder.AddComponentParameter(1, nameof(LayoutView.Layout), layout);
-        builder.AddComponentParameter(2, nameof(LayoutView.ChildContent), (RenderFragment)RenderPage);
+        builder.AddComponentParameter(1, nameof(LayoutView.Layout), pageLayoutType);
+        builder.AddComponentParameter(2, nameof(LayoutView.ChildContent), (RenderFragment)RenderPageWithParameters);
         builder.CloseComponent();
     }
 
-    private void RenderPage(RenderTreeBuilder builder)
+    private void RenderPageWithParameters(RenderTreeBuilder builder)
     {
         builder.OpenComponent(0, RouteData.PageType);
 
-        foreach (var routeValue in RouteData.RouteValues)
+        foreach (var kvp in RouteData.RouteValues)
         {
-            builder.AddComponentParameter(1, routeValue.Key, routeValue.Value);
+            builder.AddComponentParameter(1, kvp.Key, kvp.Value);
         }
 
         if (typeof(LayoutComponentBase).IsAssignableFrom(RouteData.PageType))
